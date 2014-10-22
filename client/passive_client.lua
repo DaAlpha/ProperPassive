@@ -1,3 +1,4 @@
+-- Created by DaAlpha
 class 'Passive'
 
 function Passive:__init()
