@@ -1,7 +1,7 @@
 class 'Passive'
 
 function Passive:__init()
-	self.passives = {}
+	SQL:Execute("CREATE TABLE IF NOT EXISTS Passive (steamid INTEGER(20) UNIQUE)")
 
 	Events:Subscribe("PlayerChat", self, self.PlayerChat)
 	Events:Subscribe("PlayerJoin", self, self.PlayerJoin)
@@ -14,28 +14,39 @@ function Passive:PlayerChat(args)
 		local player = args.player
 		local passive = player:GetValue("Passive")
 		local steamid = player:GetSteamId().id
+		local command
 
 		if passive then
 			player:SetNetworkValue("Passive", nil)
-			self.passives[steamid] = nil
 			if player:InVehicle() and player == player:GetVehicle():GetDriver() then
 				player:GetVehicle():SetInvulnerable(false)
 			end
 			Chat:Send(player, "Passive mode disabled.", Color.Yellow)
+
+			command = SQL:Command("DELETE FROM Passive WHERE steamid = ?")
 		else
 			player:SetNetworkValue("Passive", true)
-			self.passives[steamid] = true
 			if player:InVehicle() and player == player:GetVehicle():GetDriver() then
 				player:GetVehicle():SetInvulnerable(true)
 			end
+
+			command = SQL:Command("INSERT OR ABORT INTO Passive (steamid) VALUES (?)")
+
 			Chat:Send(player, "Passive mode enabled.", Color.Yellow)
 		end
+
+		command:Bind(1, player:GetSteamId().id)
+		command:Execute()
 		return false
 	end
 end
 
 function Passive:PlayerJoin(args)
-	if self.passives[args.player:GetSteamId().id] then
+	local query = SQL:Query("SELECT * FROM Passive WHERE steamid = ?")
+	query:Bind(1, args.player:GetSteamId().id)
+	local result = query:Execute()
+
+	if result[1] then
 		args.player:SetNetworkValue("Passive", true)
 	end
 end
