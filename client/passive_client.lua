@@ -2,13 +2,25 @@
 class 'Passive'
 
 function Passive:__init()
-	self.max_distance = 150 -- Maximum distance for the "Passive" tags in meters
+	self.max_distance = 200 -- Maximum distance for the "Passive" tags in meters
 	self.passive_text = "Passive" -- Text for the "Passive" tags
 
+	self.firing_actions = {11, 12, 13, 14, 15, 137, 138, 139}
+
+	Events:Subscribe("LocalPlayerInput", self, self.Input)
 	Events:Subscribe("LocalPlayerBulletHit", self, self.Damage)
 	Events:Subscribe("LocalPlayerExplosionHit", self, self.Damage)
 	Events:Subscribe("LocalPlayerForcePulseHit", self, self.Damage)
 	Events:Subscribe("Render", self, self.Render)
+end
+
+function Passive:Input(args)
+	if table.find(self.firing_actions, args.input) then
+		if LocalPlayer:GetValue("Passive")
+			or LocalPlayer:InVehicle() and LocalPlayer:GetVehicle():GetInvulnerable() then
+			return false
+		end
+	end
 end
 
 function Passive:Damage(args)
