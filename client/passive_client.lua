@@ -38,10 +38,9 @@ end
 function Passive:Render()
 	if Game:GetState() ~= GUIState.Game then return end
 
-	--for player in Client:GetStreamedPlayers() do
-	--	if player:GetValue("Passive") then
-			--local tagpos	= player:GetBonePosition("ragdoll_Head") + Vector3(0, 0.5, 0)
-			local tagpos = Vector3(6045, 253, 7158)
+	for player in Client:GetStreamedPlayers() do
+		if player:GetValue("Passive") then
+			local tagpos	= player:GetBonePosition("ragdoll_Head") + Vector3(0, 0.5, 0)
 			local distance	= tagpos:Distance(LocalPlayer:GetPosition())
 
 			if distance <= self.max_distance then
@@ -59,8 +58,8 @@ function Passive:Render()
 					Render:DrawText(pos, self.passive_text, color, self.text_size)
 				end
 			end
-	--	end
-	--end
+		end
+	end
 
 	if LocalPlayer:GetValue("Passive") then
 		local width = Render:GetTextWidth("Passive")
