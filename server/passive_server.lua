@@ -12,7 +12,7 @@ function Passive:__init()
 	SQL:Execute("CREATE TABLE IF NOT EXISTS Passive (steamid INTEGER(20) UNIQUE)")
 
 	Events:Subscribe("PlayerChat", self, self.PlayerChat)
-	Events:Subscribe("PlayerJoin", self, self.PlayerJoin)
+	Events:Subscribe("ClientModuleLoad", self, self.ClientModuleLoad)
 	Events:Subscribe("PlayerQuit", function(args) self.timeouts[args.player:GetId()] = nil end)
 	Events:Subscribe("PlayerEnterVehicle", self, self.PlayerEnterVehicle)
 	Events:Subscribe("PlayerExitVehicle", self, self.PlayerExitVehicle)
@@ -20,8 +20,8 @@ end
 
 function Passive:PlayerChat(args)
 	if args.text == "/passive" then
-		local player = args.player
-		local timer = self.timeouts[player:GetId()]
+		local player	= args.player
+		local timer		= self.timeouts[player:GetId()]
 
 		if timer:GetSeconds() < self.timeout then
 			local remaining = math.ceil(self.timeout - timer:GetSeconds())
@@ -59,7 +59,7 @@ function Passive:PlayerChat(args)
 	end
 end
 
-function Passive:PlayerJoin(args)
+function Passive:ClientModuleLoad(args)
 	local query = SQL:Query("SELECT * FROM Passive WHERE steamid = ?")
 	query:Bind(1, args.player:GetSteamId().id)
 	local result = query:Execute()
