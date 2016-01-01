@@ -6,7 +6,7 @@ function Passive:__init()
 	SQL:Execute("CREATE TABLE IF NOT EXISTS passive (steamid VARCHAR PRIMARY KEY)")
 
 	-- Network
-	Network:Subscribe("Toggle", self. self.Toggle)
+	Network:Subscribe("Toggle", self, self.Toggle)
 
 	-- Events
 	Events:Subscribe("ClientModuleLoad", self, self.ClientModuleLoad)
