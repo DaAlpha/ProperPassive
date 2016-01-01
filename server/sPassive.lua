@@ -2,11 +2,13 @@
 class 'Passive'
 
 function Passive:__init()
+	-- Create DB table
 	SQL:Execute("CREATE TABLE IF NOT EXISTS passive (steamid VARCHAR PRIMARY KEY)")
 
+	-- Network
 	Network:Subscribe("Toggle", self. self.Toggle)
 
-	Events:Subscribe("PlayerChat", self, self.PlayerChat)
+	-- Events
 	Events:Subscribe("ClientModuleLoad", self, self.ClientModuleLoad)
 	Events:Subscribe("PlayerEnterVehicle", self, self.PlayerEnterVehicle)
 	Events:Subscribe("PlayerExitVehicle", self, self.PlayerExitVehicle)
@@ -34,23 +36,15 @@ end
 function Passive:ClientModuleLoad(args)
 	local query = SQL:Query("SELECT * FROM passive WHERE steamid = ?")
 	query:Bind(1, args.player:GetSteamId().string)
-	local result = query:Execute()
-
-	if result[1] then
-		args.player:SetNetworkValue("Passive", true)
-	end
+	args.player:SetNetworkValue("Passive", query:Execute()[1] and true or nil)
 end
 
 function Passive:PlayerEnterVehicle(args)
-	if args.player:GetValue("Passive") and args.is_driver then
-		args.vehicle:SetInvulnerable(true)
-	end
+	args.vehicle:SetInvulnerable(args.is_driver and args.player:GetValue("Passive"))
 end
 
 function Passive:PlayerExitVehicle(args)
-	if args.vehicle:GetInvulnerable() and not args.vehicle:GetDriver() then
-		args.vehicle:SetInvulnerable(false)
-	end
+	args.vehicle:SetInvulnerable(false)
 end
 
 local passive = Passive()

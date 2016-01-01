@@ -2,23 +2,28 @@
 class 'Passive'
 
 function Passive:__init()
+	-- Settings
 	self.maxDistance	= 200			-- Maximum distance for the "Passive" tags in meters
 	self.passiveText	= "Passive"		-- Text for the "Passive" tags
 	self.textSize		= 14			-- Text size for the "Passive" tags
 	self.cooldown		= 60			-- seconds (Default: 60)
-	self.timer			= Timer()
 
-	self.firingActions	= {11, 12, 13, 14, 15, 137, 138, 139}
+	-- Globals
+	self.timer		= Timer()
+	self.actions	= {
+		[11] = true, [12] = true, [13] = true, [14] = true,
+		[15] = true, [137] = true, [138] = true, [139] = true
+		}
 
+	-- Events
 	Events:Subscribe("LocalPlayerChat", self, self.LocalPlayerChat)
-	Events:Subscribe("LocalPlayerInput", self, self.Input)
-	Events:Subscribe("LocalPlayerBulletHit", self, self.Damage)
-	Events:Subscribe("LocalPlayerExplosionHit", self, self.Damage)
-	Events:Subscribe("LocalPlayerForcePulseHit", self, self.Damage)
+	Events:Subscribe("LocalPlayerInput", self, self.LocalPlayerInput)
+	Events:Subscribe("LocalPlayerBulletHit", self, self.LocalPlayerDamage)
+	Events:Subscribe("LocalPlayerExplosionHit", self, self.LocalPlayerDamage)
+	Events:Subscribe("LocalPlayerForcePulseHit", self, self.LocalPlayerDamage)
 	Events:Subscribe("PlayerNetworkValueChange", self, self.PlayerNetworkValueChange)
 	Events:Subscribe("Render", self, self.Render)
     Events:Subscribe("ModuleLoad", self, self.ModuleLoad)
-    Events:Subscribe("ModulesLoad", self, self.ModuleLoad)
     Events:Subscribe("ModuleUnload", self, self.ModuleUnload)
 end
 
@@ -36,35 +41,27 @@ function Passive:LocalPlayerChat(args)
 	return false
 end
 
-function Passive:Input(args)
-	if table.find(self.firingActions, args.input) and (LocalPlayer:GetValue("Passive")
-			or (LocalPlayer:InVehicle() and LocalPlayer:GetVehicle():GetInvulnerable())) then
+function Passive:LocalPlayerInput(args)
+	if self.actions[args.input] and (LocalPlayer:GetValue("Passive")
+			or LocalPlayer:InVehicle() and LocalPlayer:GetVehicle():GetInvulnerable()) then
 		return false
 	end
 end
 
-function Passive:Damage(args)
-	if LocalPlayer:GetValue("Passive") then
+function Passive:LocalPlayerDamage(args)
+	if LocalPlayer:GetValue("Passive") or args.attacker and (args.attacker:GetValue("Passive")
+			or args.attacker:InVehicle() and args.attacker:GetVehicle():GetInvulnerable()) then
 		return false
-	elseif args.attacker then
-		if args.attacker:GetValue("Passive") or
-			args.attacker:InVehicle() and args.attacker:GetVehicle():GetInvulnerable() then
-			return false
-		end
 	end
 end
 
 function Passive:PlayerNetworkValueChange(args)
 	if args.player == LocalPlayer and args.key == "Passive" then
-		self:FirePlayerEvent(args.value)
-	end
-end
-
-function Passive:FirePlayerEvent(passive)
-	if passive then
-		Game:FireEvent("ply.invulnerable")
-	else
-		Game:FireEvent("ply.vulnerable")
+		if args.value then
+			Game:FireEvent("ply.invulnerable")
+		else
+			Game:FireEvent("ply.vulnerable")
+		end
 	end
 end
 
