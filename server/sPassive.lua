@@ -9,7 +9,7 @@ function Passive:__init()
 		self.timeouts[p:GetId()] = Timer()
 	end
 
-	SQL:Execute("CREATE TABLE IF NOT EXISTS Passive (steamid INTEGER(20) UNIQUE)")
+	SQL:Execute("CREATE TABLE IF NOT EXISTS passive (steamid VARCHAR PRIMARY KEY)")
 
 	Events:Subscribe("PlayerChat", self, self.PlayerChat)
 	Events:Subscribe("ClientModuleLoad", self, self.ClientModuleLoad)
@@ -30,7 +30,7 @@ function Passive:PlayerChat(args)
 		end
 
 		local passive = player:GetValue("Passive")
-		local steamid = player:GetSteamId().id
+		local steamid = player:GetSteamId().string
 		local command
 
 		if passive then
@@ -40,19 +40,19 @@ function Passive:PlayerChat(args)
 			end
 			Chat:Send(player, "Passive mode disabled.", Color.Lime)
 
-			command = SQL:Command("DELETE FROM Passive WHERE steamid = ?")
+			command = SQL:Command("DELETE FROM passive WHERE steamid = ?")
 		else
 			player:SetNetworkValue("Passive", true)
 			if player:InVehicle() and player == player:GetVehicle():GetDriver() then
 				player:GetVehicle():SetInvulnerable(true)
 			end
 
-			command = SQL:Command("INSERT OR ABORT INTO Passive (steamid) VALUES (?)")
+			command = SQL:Command("INSERT OR ABORT INTO passive (steamid) VALUES (?)")
 
 			Chat:Send(player, "Passive mode enabled.", Color.Lime)
 		end
 
-		command:Bind(1, player:GetSteamId().id)
+		command:Bind(1, player:GetSteamId().string)
 		command:Execute()
 		timer:Restart()
 		return false
@@ -60,8 +60,8 @@ function Passive:PlayerChat(args)
 end
 
 function Passive:ClientModuleLoad(args)
-	local query = SQL:Query("SELECT * FROM Passive WHERE steamid = ?")
-	query:Bind(1, args.player:GetSteamId().id)
+	local query = SQL:Query("SELECT * FROM passive WHERE steamid = ?")
+	query:Bind(1, args.player:GetSteamId().string)
 	local result = query:Execute()
 
 	self.timeouts[args.player:GetId()] = Timer()
