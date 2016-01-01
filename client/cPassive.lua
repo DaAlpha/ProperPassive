@@ -5,9 +5,12 @@ function Passive:__init()
 	self.maxDistance	= 200			-- Maximum distance for the "Passive" tags in meters
 	self.passiveText	= "Passive"		-- Text for the "Passive" tags
 	self.textSize		= 14			-- Text size for the "Passive" tags
+	self.cooldown		= 60			-- seconds (Default: 60)
+	self.timer			= Timer()
 
 	self.firingActions	= {11, 12, 13, 14, 15, 137, 138, 139}
 
+	Events:Subscribe("LocalPlayerChat", self, self.LocalPlayerChat)
 	Events:Subscribe("LocalPlayerInput", self, self.Input)
 	Events:Subscribe("LocalPlayerBulletHit", self, self.Damage)
 	Events:Subscribe("LocalPlayerExplosionHit", self, self.Damage)
@@ -17,6 +20,20 @@ function Passive:__init()
     Events:Subscribe("ModuleLoad", self, self.ModuleLoad)
     Events:Subscribe("ModulesLoad", self, self.ModuleLoad)
     Events:Subscribe("ModuleUnload", self, self.ModuleUnload)
+end
+
+function Passive:LocalPlayerChat(args)
+	if args.text:lower() ~= "/passive" then return end
+
+	local seconds = self.timer:GetSeconds()
+	if seconds < self.cooldown then
+		Chat:Print("Cooling down. " .. math.ceil(self.cooldown - seconds) .. " seconds remaining.", Color.Red)
+		return false
+	end
+
+	Network:Send("Toggle", not LocalPlayer:GetValue("Passive"))
+	self.timer:Restart()
+	return false
 end
 
 function Passive:Input(args)
