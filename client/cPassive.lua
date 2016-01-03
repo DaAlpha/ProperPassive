@@ -22,7 +22,7 @@ function Passive:__init()
 	Events:Subscribe("LocalPlayerBulletHit", self, self.LocalPlayerDamage)
 	Events:Subscribe("LocalPlayerExplosionHit", self, self.LocalPlayerDamage)
 	Events:Subscribe("LocalPlayerForcePulseHit", self, self.LocalPlayerDamage)
-	Events:Subscribe("PlayerNetworkValueChange", self, self.PlayerNetworkValueChange)
+	Events:Subscribe("NetworkObjectValueChange", self, self.NetworkObjectValueChange)
 	Events:Subscribe("Render", self, self.Render)
     Events:Subscribe("ModuleLoad", self, self.ModuleLoad)
     Events:Subscribe("ModuleUnload", self, self.ModuleUnload)
@@ -56,8 +56,8 @@ function Passive:LocalPlayerDamage(args)
 	end
 end
 
-function Passive:PlayerNetworkValueChange(args)
-	if args.player == LocalPlayer and args.key == "Passive" then
+function Passive:NetworkObjectValueChange(args)
+	if args.object == LocalPlayer and args.key == "Passive" then
 		if args.value then
 			Game:FireEvent("ply.invulnerable")
 		else
