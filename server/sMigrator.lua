@@ -6,6 +6,12 @@ Console:Subscribe("migratepassive",
 
 		print("Commencing passive database migration ...")
 
+		if not SQL:Query("SELECT name FROM sqlite_master WHERE type ='table' AND name='Passive'"):Execute()[1] then
+			SQL:Execute("CREATE TABLE IF NOT EXISTS passive (steamid VARCHAR PRIMARY KEY)")
+			print("Old passive table did not exist. Created an empty new one of none existed.")
+			return
+		end
+
 		-- Save entries temporarily
 		print("Loading DB entries ...")
 		local entries = {}
