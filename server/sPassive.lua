@@ -15,15 +15,14 @@ function Passive:__init()
 end
 
 function Passive:Toggle(state, sender)
-	player:SetNetworkValue("Passive", state or nil)
+	sender:SetNetworkValue("Passive", state or nil)
 
 	local vehicle = sender:GetVehicle()
 	if IsValid(vehicle) and vehicle:GetDriver() == sender then
 		vehicle:SetInvulnerable(state)
 	end
 
-	Chat:Send(player, "Passive mode " .. (state and "enabled." or "disabled."),
-		state and Color.Lime or Color.Red)
+	Chat:Send(sender, "Passive mode " .. (state and "enabled." or "disabled."), Color.Lime)
 
 	local command = SQL:Command(state
 						and "INSERT OR REPLACE INTO passive VALUES (?)"
@@ -40,7 +39,7 @@ function Passive:ClientModuleLoad(args)
 end
 
 function Passive:PlayerEnterVehicle(args)
-	args.vehicle:SetInvulnerable(args.is_driver and args.player:GetValue("Passive"))
+	args.vehicle:SetInvulnerable(args.is_driver and args.player:GetValue("Passive") == true)
 end
 
 function Passive:PlayerExitVehicle(args)
