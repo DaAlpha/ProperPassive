@@ -57,7 +57,8 @@ function Passive:LocalPlayerDamage(args)
 end
 
 function Passive:NetworkObjectValueChange(args)
-	if args.object == LocalPlayer and args.key == "Passive" then
+	if args.key == "Passive" and args.object.__type == "Player" and
+			args.object == LocalPlayer then
 		if args.value then
 			Game:FireEvent("ply.invulnerable")
 		else
