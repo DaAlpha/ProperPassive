@@ -23,7 +23,6 @@ function Passive:__init()
 	-- Events
 	Events:Subscribe("ClientModuleLoad", self, self.ClientModuleLoad)
 	Events:Subscribe("PlayerEnterVehicle", self, self.PlayerEnterVehicle)
-	Events:Subscribe("PlayerExitVehicle", self, self.PlayerExitVehicle)
 	Events:Subscribe("PostTick", self, self.PostTick)
 	Events:Subscribe("ModuleUnload", self, self.ModuleUnload)
 end
@@ -47,10 +46,6 @@ end
 
 function Passive:PlayerEnterVehicle(args)
 	args.vehicle:SetInvulnerable(args.is_driver and args.player:GetValue("Passive") == true)
-end
-
-function Passive:PlayerExitVehicle(args)
-	args.vehicle:SetInvulnerable(false)
 end
 
 function Passive:PostTick()
