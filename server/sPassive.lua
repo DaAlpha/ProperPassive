@@ -2,11 +2,13 @@
 class 'Passive'
 
 function Passive:__init()
+	-- Settings
+	self.remTime	= 7		-- Days
+	self.interval	= 1		-- Hours
+
 	-- Globals
 	self.passives	= {}
 	self.timer		= Timer()
-	self.interval	= 1		-- Hours
-	self.remTime	= 7		-- Days
 
 	-- Create DB table if it does not exist
 	SQL:Execute("CREATE TABLE IF NOT EXISTS passive (steamid VARCHAR PRIMARY KEY)")
