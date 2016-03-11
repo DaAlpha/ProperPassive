@@ -2,8 +2,20 @@
 class 'Passive'
 
 function Passive:__init()
-	-- Create DB table
+	-- Globals
+	self.passives	= {}
+	self.timer		= Timer()
+	self.interval	= 1		-- Hours
+	self.remTime	= 14	-- Days
+
+	-- Create DB table if it does not exist
 	SQL:Execute("CREATE TABLE IF NOT EXISTS passive (steamid VARCHAR PRIMARY KEY)")
+
+	-- Load SQL entries to the cache initialls
+	local timestamp = os.time()
+	for _, entry in ipairs(SQL:Query("SELECT * FROM passive"):Execute()) do
+		self.passives[entry.steamid] = timestamp
+	end
 
 	-- Network
 	Network:Subscribe("Toggle", self, self.Toggle)
@@ -12,6 +24,8 @@ function Passive:__init()
 	Events:Subscribe("ClientModuleLoad", self, self.ClientModuleLoad)
 	Events:Subscribe("PlayerEnterVehicle", self, self.PlayerEnterVehicle)
 	Events:Subscribe("PlayerExitVehicle", self, self.PlayerExitVehicle)
+	Events:Subscribe("PostTick", self, self.PostTick)
+	Events:Subscribe("ModuleUnload", self, self.ModuleUnload)
 end
 
 function Passive:Toggle(state, sender)
@@ -24,18 +38,11 @@ function Passive:Toggle(state, sender)
 
 	Chat:Send(sender, "Passive mode " .. (state and "enabled." or "disabled."), Color.Lime)
 
-	local command = SQL:Command(state
-						and "INSERT OR REPLACE INTO passive VALUES (?)"
-						or "DELETE FROM passive WHERE steamid = ?"
-						)
-	command:Bind(1, sender:GetSteamId().string)
-	command:Execute()
+	self.passives[sender:GetSteamId().string] = state and os.time() or nil
 end
 
 function Passive:ClientModuleLoad(args)
-	local query = SQL:Query("SELECT * FROM passive WHERE steamid = ?")
-	query:Bind(1, args.player:GetSteamId().string)
-	args.player:SetNetworkValue("Passive", query:Execute()[1] and true or nil)
+	args.player:SetNetworkValue("Passive", self.passives[args.player:GetSteamId().string] and true or nil)
 end
 
 function Passive:PlayerEnterVehicle(args)
@@ -44,6 +51,30 @@ end
 
 function Passive:PlayerExitVehicle(args)
 	args.vehicle:SetInvulnerable(false)
+end
+
+function Passive:PostTick()
+	if self.timer:GetHours() > self.interval then
+		local threshold = os.time() - self.remTime * 86400
+		for steamid, timestamp in pairs(self.passives) do
+			if timestamp < threshold then
+				self.passives[steamid] = nil
+			end
+		end
+		self.timer:Restart()
+	end
+end
+
+function Passive:ModuleUnload()
+	SQL:Execute("DELETE FROM passive")
+
+	local trans = SQL:Transaction()
+	for steamid, _ in pairs(self.passives) do
+		local command = SQL:Command("INSERT INTO passive VALUES (?)")
+		command:Bind(1, steamid)
+		command:Execute()
+	end
+	trans:Commit()
 end
 
 local passive = Passive()
