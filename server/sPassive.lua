@@ -61,14 +61,14 @@ function Passive:PostTick()
 				self.passives[steamid] = nil
 			end
 		end
+		self:ModuleUnload()
 		self.timer:Restart()
 	end
 end
 
 function Passive:ModuleUnload()
-	SQL:Execute("DELETE FROM passive")
-
 	local trans = SQL:Transaction()
+	SQL:Execute("DELETE FROM passive")
 	for steamid, _ in pairs(self.passives) do
 		local command = SQL:Command("INSERT INTO passive VALUES (?)")
 		command:Bind(1, steamid)
