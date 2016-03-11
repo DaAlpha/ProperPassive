@@ -6,7 +6,7 @@ function Passive:__init()
 	self.passives	= {}
 	self.timer		= Timer()
 	self.interval	= 1		-- Hours
-	self.remTime	= 14	-- Days
+	self.remTime	= 7		-- Days
 
 	-- Create DB table if it does not exist
 	SQL:Execute("CREATE TABLE IF NOT EXISTS passive (steamid VARCHAR PRIMARY KEY)")
@@ -41,7 +41,10 @@ function Passive:Toggle(state, sender)
 end
 
 function Passive:ClientModuleLoad(args)
-	args.player:SetNetworkValue("Passive", self.passives[args.player:GetSteamId().string] and true or nil)
+	local steamid = args.player:GetSteamId().string
+	local state = self.passives[steamid]
+	args.player:SetNetworkValue("Passive", state)
+	self.passives[steamid] = state and os.time() or nil
 end
 
 function Passive:PlayerEnterVehicle(args)
