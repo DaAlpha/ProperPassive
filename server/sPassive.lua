@@ -45,12 +45,17 @@ end
 function Passive:ClientModuleLoad(args)
 	local steamid = args.player:GetSteamId().string
 	local state = self.passives[steamid]
-	args.player:SetNetworkValue("Passive", state)
+	args.player:SetNetworkValue("Passive", state and true or false)
 	self.passives[steamid] = state and os.time() or nil
+
+	local vehicle = args.player:GetVehicle()
+	if IsValid(vehicle) and vehicle:GetDriver() == args.player then
+		vehicle:SetInvulnerable(state ~= nil)
+	end
 end
 
 function Passive:PlayerEnterVehicle(args)
-	args.vehicle:SetInvulnerable(args.is_driver and args.player:GetValue("Passive") == true)
+	if args.is_driver then args.vehicle:SetInvulnerable(args.player:GetValue("Passive") == true) end
 end
 
 function Passive:PostTick()
