@@ -10,7 +10,7 @@ function Passive:__init()
   self.passiveColor = Color(0, 222, 0) -- Color used for tags and info text
 
   -- Globals
-  self.timer    = Timer()
+  self.cooltime = 0
   self.actions  = {
     [11] = true, [12] = true, [13] = true, [14] = true,
     [15] = true, [137] = true, [138] = true, [139] = true
@@ -31,14 +31,14 @@ end
 function Passive:LocalPlayerChat(args)
   if args.text:lower() ~= "/passive" then return end
 
-  local seconds = self.timer:GetSeconds()
-  if seconds < self.cooldown then
-    Chat:Print("Cooling down. " .. math.ceil(self.cooldown - seconds) .. " seconds remaining.", Color.Red)
+  local time = Client:GetElapsedSeconds()
+  if time < self.cooltime then
+    Chat:Print("Cooling down. " .. math.ceil(self.cooltime - time) .. " seconds remaining.", Color.Red)
     return false
   end
 
   Network:Send("Toggle", not LocalPlayer:GetValue("Passive"))
-  self.timer:Restart()
+  self.cooltime = time + self.cooldown
   return false
 end
 
