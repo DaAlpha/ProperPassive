@@ -63,7 +63,7 @@ function Passive:PlayerEnterVehicle(args)
 end
 
 function Passive:PostTick()
-  if Server:GetElapsedSeconds() % self.interval == 0 then
+  if math.floor(Server:GetElapsedSeconds()) % self.interval == 0 then
     self:ModuleUnload()
   end
 end
