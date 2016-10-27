@@ -8,6 +8,7 @@ function Passive:__init()
   -- Globals
   self.passives = {}
   self.diff     = {}
+  self.nextSave = self.interval
 
   -- Create DB table if it does not exist
   SQL:Execute("CREATE TABLE IF NOT EXISTS passive (steamid VARCHAR PRIMARY KEY)")
@@ -63,8 +64,9 @@ function Passive:PlayerEnterVehicle(args)
 end
 
 function Passive:PostTick()
-  if math.floor(Server:GetElapsedSeconds()) % self.interval == 0 then
+  if Server:GetElapsedSeconds() > self.nextSave then
     self:ModuleUnload()
+    self.nextSave = Server:GetElapsedSeconds() + self.interval
   end
 end
 
