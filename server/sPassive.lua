@@ -91,4 +91,4 @@ function Passive:ModuleUnload()
   print(string.format("Saved %d passives in %dms.", i, timer:GetMilliseconds()))
 end
 
-local passive = Passive()
+Passive()

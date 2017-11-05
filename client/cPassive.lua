@@ -14,7 +14,7 @@ function Passive:__init()
   self.actions  = {
     [11] = true, [12] = true, [13] = true, [14] = true,
     [15] = true, [137] = true, [138] = true, [139] = true
-    }
+  }
 
   -- Events
   Events:Subscribe("LocalPlayerChat", self, self.LocalPlayerChat)
@@ -109,11 +109,11 @@ function Passive:ModuleLoad()
       "If a vehicle is invulnerable, its mounted guns cannot be used, " ..
       "even if the person using it is not passive.\n \n" ..
       "Passive Mode (public version) by DaAlpha, creator and owner of Alpha's Salt Factory"
-      })
+  })
 end
 
 function Passive:ModuleUnload()
   Events:Fire("HelpRemoveItem", {name = "Passive Mode"})
 end
 
-local passive = Passive()
+Passive()
