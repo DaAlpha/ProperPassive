@@ -108,7 +108,7 @@ function Passive:ModuleLoad()
       "the vehicle will become invulnerable until he exits the vehicle. " ..
       "If a vehicle is invulnerable, its mounted guns cannot be used, " ..
       "even if the person using it is not passive.\n \n" ..
-      "Passive Mode (public version) by DaAlpha, creator of the Nologam JC2MP server"
+      "Passive Mode (public version) by DaAlpha, creator and owner of Alpha's Salt Factory"
       })
 end
 
