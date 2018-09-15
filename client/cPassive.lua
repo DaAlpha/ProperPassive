@@ -17,53 +17,15 @@ function Passive:__init()
   }
 
   -- Events
+  Events:Subscribe("Render", self, self.Render)
+  Events:Subscribe("ModuleLoad", self, self.ModuleLoad)
+  Events:Subscribe("ModuleUnload", self, self.ModuleUnload)
   Events:Subscribe("LocalPlayerChat", self, self.LocalPlayerChat)
   Events:Subscribe("LocalPlayerInput", self, self.LocalPlayerInput)
   Events:Subscribe("LocalPlayerBulletHit", self, self.LocalPlayerDamage)
   Events:Subscribe("LocalPlayerExplosionHit", self, self.LocalPlayerDamage)
   Events:Subscribe("LocalPlayerForcePulseHit", self, self.LocalPlayerDamage)
   Events:Subscribe("NetworkObjectValueChange", self, self.NetworkObjectValueChange)
-  Events:Subscribe("Render", self, self.Render)
-  Events:Subscribe("ModuleLoad", self, self.ModuleLoad)
-  Events:Subscribe("ModuleUnload", self, self.ModuleUnload)
-end
-
-function Passive:LocalPlayerChat(args)
-  if args.text:lower() ~= "/passive" then return end
-
-  local time = Client:GetElapsedSeconds()
-  if time < self.cooltime then
-    Chat:Print("Cooling down. " .. math.ceil(self.cooltime - time) .. " seconds remaining.", Color.Red)
-    return false
-  end
-
-  Network:Send("Toggle", not LocalPlayer:GetValue("Passive"))
-  self.cooltime = time + self.cooldown
-  return false
-end
-
-function Passive:LocalPlayerInput(args)
-  if self.actions[args.input] and (LocalPlayer:GetValue("Passive")
-      or LocalPlayer:InVehicle() and LocalPlayer:GetVehicle():GetInvulnerable()) then
-    return false
-  end
-end
-
-function Passive:LocalPlayerDamage(args)
-  if LocalPlayer:GetValue("Passive") or args.attacker and (args.attacker:GetValue("Passive")
-      or args.attacker:InVehicle() and args.attacker:GetVehicle():GetInvulnerable()) then
-    return false
-  end
-end
-
-function Passive:NetworkObjectValueChange(args)
-  if args.key == "Passive" and args.object.__type == "LocalPlayer" then
-    if args.value then
-      Game:FireEvent("ply.invulnerable")
-    else
-      Game:FireEvent("ply.vulnerable")
-    end
-  end
 end
 
 function Passive:Render()
@@ -114,6 +76,44 @@ end
 
 function Passive:ModuleUnload()
   Events:Fire("HelpRemoveItem", {name = "Passive Mode"})
+end
+
+function Passive:LocalPlayerChat(args)
+  if args.text:lower() ~= "/passive" then return end
+
+  local time = Client:GetElapsedSeconds()
+  if time < self.cooltime then
+    Chat:Print("Cooling down. " .. math.ceil(self.cooltime - time) .. " seconds remaining.", Color.Red)
+    return false
+  end
+
+  Network:Send("Toggle", not LocalPlayer:GetValue("Passive"))
+  self.cooltime = time + self.cooldown
+  return false
+end
+
+function Passive:LocalPlayerInput(args)
+  if self.actions[args.input] and (LocalPlayer:GetValue("Passive")
+      or LocalPlayer:InVehicle() and LocalPlayer:GetVehicle():GetInvulnerable()) then
+    return false
+  end
+end
+
+function Passive:LocalPlayerDamage(args)
+  if LocalPlayer:GetValue("Passive") or args.attacker and (args.attacker:GetValue("Passive")
+      or args.attacker:InVehicle() and args.attacker:GetVehicle():GetInvulnerable()) then
+    return false
+  end
+end
+
+function Passive:NetworkObjectValueChange(args)
+  if args.key == "Passive" and args.object.__type == "LocalPlayer" then
+    if args.value then
+      Game:FireEvent("ply.invulnerable")
+    else
+      Game:FireEvent("ply.vulnerable")
+    end
+  end
 end
 
 Passive()

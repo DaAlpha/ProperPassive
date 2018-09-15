@@ -31,10 +31,10 @@ function Passive:__init()
   Network:Subscribe("Toggle", self, self.Toggle)
 
   -- Events
-  Events:Subscribe("ClientModuleLoad", self, self.ClientModuleLoad)
-  Events:Subscribe("PlayerEnterVehicle", self, self.PlayerEnterVehicle)
   Events:Subscribe("PostTick", self, self.PostTick)
   Events:Subscribe("ModuleUnload", self, self.ModuleUnload)
+  Events:Subscribe("ClientModuleLoad", self, self.ClientModuleLoad)
+  Events:Subscribe("PlayerEnterVehicle", self, self.PlayerEnterVehicle)
 
   -- Console
   Console:Subscribe("savepassive", self, self.ModuleUnload)
@@ -53,19 +53,6 @@ function Passive:Toggle(state, sender)
   local steamid = sender:GetSteamId().string
   self.diff[steamid] = not self.diff[steamid] or nil
   self.passives[steamid] = state or nil
-end
-
-function Passive:ClientModuleLoad(args)
-  local state = self.passives[args.player:GetSteamId().string]
-  args.player:SetNetworkValue("Passive", state)
-  local vehicle = args.player:GetVehicle()
-  if IsValid(vehicle) and vehicle:GetDriver() == args.player then
-    vehicle:SetInvulnerable(state ~= nil)
-  end
-end
-
-function Passive:PlayerEnterVehicle(args)
-  if args.is_driver then args.vehicle:SetInvulnerable(args.player:GetValue("Passive") == true) end
 end
 
 function Passive:PostTick()
@@ -94,6 +81,19 @@ function Passive:ModuleUnload()
   trans:Commit()
   self.diff = {}
   print(string.format("Saved %d passives in %dms.", i, timer:GetMilliseconds()))
+end
+
+function Passive:ClientModuleLoad(args)
+  local state = self.passives[args.player:GetSteamId().string]
+  args.player:SetNetworkValue("Passive", state)
+  local vehicle = args.player:GetVehicle()
+  if IsValid(vehicle) and vehicle:GetDriver() == args.player then
+    vehicle:SetInvulnerable(state ~= nil)
+  end
+end
+
+function Passive:PlayerEnterVehicle(args)
+  if args.is_driver then args.vehicle:SetInvulnerable(args.player:GetValue("Passive") == true) end
 end
 
 Passive()
