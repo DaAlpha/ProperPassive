@@ -66,10 +66,9 @@ function Passive:ModuleUnload()
   local i = 0
   local timer = Timer()
   local trans = SQL:Transaction()
-  for steamid, _ in pairs(self.diff) do
-    local state = self.passives[steamid]
+  for steamid in pairs(self.diff) do
     local command
-    if state then
+    if self.passives[steamid] then
       command = SQL:Command("INSERT OR REPLACE INTO passive VALUES (?)")
     else
       command = SQL:Command("DELETE FROM passive WHERE steamid = ?")
@@ -86,6 +85,7 @@ end
 function Passive:ClientModuleLoad(args)
   local state = self.passives[args.player:GetSteamId().string]
   args.player:SetNetworkValue("Passive", state)
+
   local vehicle = args.player:GetVehicle()
   if IsValid(vehicle) and vehicle:GetDriver() == args.player then
     vehicle:SetInvulnerable(state ~= nil)
@@ -93,7 +93,9 @@ function Passive:ClientModuleLoad(args)
 end
 
 function Passive:PlayerEnterVehicle(args)
-  if args.is_driver then args.vehicle:SetInvulnerable(args.player:GetValue("Passive") == true) end
+  if args.is_driver then
+    args.vehicle:SetInvulnerable(args.player:GetValue("Passive") == true)
+  end
 end
 
 Passive()
