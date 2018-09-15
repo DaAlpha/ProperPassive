@@ -10,6 +10,11 @@ function Passive:__init()
   self.diff     = {}
   self.nextSave = self.interval
 
+  -- Note: self.nextSave defaults to self.interval instead of
+  -- Server:GetElapsedSeconds() because the latter returns wrong and very
+  -- high values when called during server startup which would result into
+  -- self.nextSave never being reached during the module runtime
+
   -- Create DB table if it does not exist
   SQL:Execute("CREATE TABLE IF NOT EXISTS passive (steamid VARCHAR PRIMARY KEY)")
 
